@@ -14,7 +14,8 @@ def vgg_face(param_path, input_maps):
     normalization = meta['normalization']
     average_image = np.squeeze(normalization[0][0]['averageImage'][0][0][0][0])
     image_size = np.squeeze(normalization[0][0]['imageSize'][0][0])
-    input_maps = tf.image.resize_images(input_maps, image_size[0], image_size[1])
+    #input_maps = tf.image.resize_images(input_maps, image_size[0], image_size[1])
+    input_maps = tf.image.resize_images(input_maps, (image_size[0], image_size[1]))
 
     # read layer info
     layers = data['layers']
