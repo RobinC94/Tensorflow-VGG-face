@@ -2,6 +2,10 @@ import os
 import numpy as np
 from Bio.Cluster import clusterdistance
 import json
+import multiprocessing
+import pickle
+
+root_path = '/data1/datasets/PeopleInfo'
 
 def get_dis_of_face(face1, face2):
     data = np.vstack((face1,face2))
@@ -10,7 +14,7 @@ def get_dis_of_face(face1, face2):
     index1 = range(l1)
     index2 = range(l1, l1 + l2, 1)
 
-    dis = clusterdistance(data, index1=index1, index2=index2, dist='e', method='v')
+    dis = clusterdistance(data, index1=index1, index2=index2, dist='e', method='s')
     return dis
 
 def find_min_dis(dis_mat, index_list):
@@ -46,7 +50,7 @@ def update_dis_mat(dis_mat, face_dict, i):
 def get_face_array(data_list):
     face_list = []
     for data in data_list:
-        file_path = './data/' + data
+        file_path = root_path + '/' + data + '/' + data + '.npy'
         face = np.load(file_path)
         face_list.append(face)
 
@@ -56,22 +60,30 @@ def get_face_array(data_list):
 if __name__ == "__main__":
     face_list = []
     face_dict = {}
-    data_path = './data/'
-    data_file_list = os.listdir(data_path)
+    data_file_list = os.listdir(root_path)
     file_num = len(data_file_list)
     for file in data_file_list:
-        file_path = data_path + file
+        file_path = root_path + '/' + file + '/' + file + '.npy'
         face_data = np.load(file_path)
         face_list.append(face_data)
 
-    dis_mat = [[10000 for x in range(file_num)] for y in range(file_num)]
     for i in range(file_num):
         face_dict[i] = [data_file_list[i]]
-        for j in range(i+1, file_num, 1):
-            face1 = face_list[i]
-            face2 = face_list[j]
-            dis = get_dis_of_face(face1, face2)
-            dis_mat[i][j] = dis
+
+    # dis_mat = [[10000 for x in range(file_num)] for y in range(file_num)]
+    # for i in range(file_num):
+    #     face_dict[i] = [data_file_list[i]]
+    #     for j in range(i+1, file_num, 1):
+    #         face1 = face_list[i]
+    #         face2 = face_list[j]
+    #         dis = get_dis_of_face(face1, face2)
+    #         dis_mat[i][j] = dis
+    #
+    # with open('./dis_mat.pk', 'w') as pk:
+    #     pickle.dump(dis_mat, pk)
+
+    with open('./dis_mat.pk', 'r') as pk:
+        dis_mat = pickle.load(pk)
 
     while(len(face_dict.keys()) > 101):
         index_list = face_dict.keys()
@@ -83,7 +95,3 @@ if __name__ == "__main__":
 
     with open('cluster_result.json', 'w') as f:
         json.dump(face_dict, f)
-
-
-
-    print(face_dict)
